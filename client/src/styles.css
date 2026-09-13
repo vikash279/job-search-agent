@@ -1,0 +1,140 @@
+:root {
+  --ink: #12202b;
+  --ink-soft: #1d3344;
+  --paper: #f4efe4;
+  --paper-2: #fffaf0;
+  --line: #d9cbb3;
+  --gold: #c9862a;
+  --gold-deep: #9a6416;
+  --sea: #2f6f6a;
+  --rose: #9b3d3d;
+  --muted: #5d6b73;
+  --shadow: 0 18px 40px rgba(18, 32, 43, 0.08);
+}
+
+* { box-sizing: border-box; }
+html, body, #root { min-height: 100%; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top left, #f7e7c6 0, transparent 28%),
+    linear-gradient(180deg, #f7f1e6 0%, #efe6d4 100%);
+  font-family: "IBM Plex Sans", sans-serif;
+}
+
+h1, h2, h3, .serif { font-family: Fraunces, Georgia, serif; }
+a { color: inherit; }
+
+.shell { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+.sidebar {
+  background: var(--ink);
+  color: #f6efe2;
+  padding: 28px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.brand { font-size: 28px; margin: 0; }
+.brand span { color: var(--gold); }
+.nav { display: grid; gap: 6px; }
+.nav a {
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #d9e2e8;
+}
+.nav a.active, .nav a:hover { background: #1d3545; color: #fff; }
+.sidebar .who { margin-top: auto; font-size: 13px; color: #b9c6ce; }
+
+.main { padding: 32px 40px 64px; }
+.page-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 24px; }
+.page-head p { margin: 8px 0 0; color: var(--muted); max-width: 640px; }
+
+.grid { display: grid; gap: 16px; }
+.grid.cards { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.card {
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+.job-card h3 { margin: 0 0 6px; font-size: 22px; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+.pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 3px 9px;
+  background: #efe3cc;
+  font-size: 12px;
+}
+.pill.good { background: #d8ece6; color: var(--sea); }
+.pill.warn { background: #f3ddd0; color: var(--rose); }
+.score {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 650;
+  background: #12202b;
+  color: #f6efe2;
+}
+
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.btn, button, input, select, textarea {
+  font: inherit;
+}
+.btn, button.btn {
+  border: 0;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+button.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+button.btn.gold { background: var(--gold-deep); }
+button.btn.danger { background: var(--rose); }
+button.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+label { display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
+input, select, textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: var(--ink);
+}
+textarea { min-height: 110px; resize: vertical; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.span-2 { grid-column: span 2; }
+
+.auth {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.auth-card { width: min(460px, 100%); }
+
+.notice { color: var(--rose); }
+.success { color: var(--sea); }
+.muted { color: var(--muted); }
+.list { display: grid; gap: 10px; }
+.split { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 18px; }
+.desc { white-space: pre-wrap; line-height: 1.55; max-height: 420px; overflow: auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); font-size: 14px; }
+
+@media (max-width: 900px) {
+  .shell { grid-template-columns: 1fr; }
+  .sidebar { flex-direction: row; flex-wrap: wrap; }
+  .nav { grid-auto-flow: column; overflow: auto; }
+  .form-grid, .split { grid-template-columns: 1fr; }
+  .span-2 { grid-column: auto; }
+  .main { padding: 20px 16px 48px; }
+}

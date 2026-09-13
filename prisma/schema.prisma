@@ -1,0 +1,295 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  profile       CandidateProfile?
+  resumes       ResumeVersion[]
+  preferences   JobPreference?
+  matches       JobMatch[]
+  applications  Application[]
+  savedJobs     SavedJob[]
+  notifications Notification[]
+  auditLogs     AuditLog[]
+}
+
+model CandidateProfile {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  headline           String?
+  summary            String?
+  yearsExperience    Float?
+  currentTitle       String?
+  currentCompany     String?
+  skills             Json?
+  experience         Json?
+  education          Json?
+  achievements       Json?
+  certifications     Json?
+  projects           Json?
+  preferredLocations Json?
+  preferredRoles     Json?
+  preferredWorkModes Json?
+  noticePeriodDays   Int?
+  expectedSalaryMin  Int?
+  expectedSalaryMax  Int?
+  salaryCurrency     String?  @default("USD")
+  verifiedFields     Json?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matches JobMatch[]
+}
+
+model ResumeVersion {
+  id            String   @id @default(cuid())
+  userId        String
+  name          String
+  fileKey       String   @unique
+  fileType      String
+  parsedText    String?
+  parsedProfile Json?
+  isDefault     Boolean  @default(false)
+  version       Int      @default(1)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  applications Application[]
+
+  @@index([userId])
+  @@index([userId, isDefault])
+}
+
+model JobSource {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  sourceType String
+  baseUrl   String
+  enabled   Boolean  @default(true)
+  config    Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jobs Job[]
+}
+
+model Job {
+  id             String    @id @default(cuid())
+  sourceId       String
+  externalId     String
+  canonicalUrl   String
+  title          String
+  company        String
+  location       String?
+  workMode       String?
+  employmentType String?
+  salaryMin      Int?
+  salaryMax      Int?
+  salaryCurrency String?
+  description    String
+  requirements   Json?
+  skills         Json?
+  postedAt       DateTime?
+  expiresAt      DateTime?
+  status         String    @default("active")
+  rawData        Json?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  source       JobSource     @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  matches      JobMatch[]
+  applications Application[]
+  savedBy      SavedJob[]
+
+  @@unique([sourceId, externalId])
+  @@index([canonicalUrl])
+  @@index([company])
+  @@index([status])
+  @@index([postedAt])
+}
+
+model SavedJob {
+  id        String   @id @default(cuid())
+  userId    String
+  jobId     String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+}
+
+model JobMatch {
+  id             String   @id @default(cuid())
+  userId         String
+  jobId          String
+  profileId      String
+  score          Int
+  recommendation String
+  matchedSkills  Json?
+  missingSkills  Json?
+  strengths      Json?
+  concerns       Json?
+  explanation    String
+  modelVersion   String
+  promptVersion  String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job     Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  profile CandidateProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+  @@index([userId, score])
+}
+
+model JobPreference {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  targetRoles        Json?
+  preferredLocations Json?
+  workModes          Json?
+  preferredTech      Json?
+  salaryMin          Int?
+  salaryMax          Int?
+  salaryCurrency     String?  @default("USD")
+  noticePeriodDays   Int?
+  minimumMatchScore  Int      @default(50)
+  excludedCompanies  Json?
+  excludedKeywords   Json?
+  searchKeywords     Json?
+  autoSearchEnabled  Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Application {
+  id               String    @id @default(cuid())
+  userId           String
+  jobId            String
+  resumeVersionId  String?
+  status           String    @default("DRAFT")
+  matchScore       Int?
+  applicationUrl   String?
+  coverLetter      String?
+  tailoredResume   String?
+  tailoringNotes   Json?
+  answersSnapshot  Json?
+  jobSnapshot      Json?
+  submittedData    Json?
+  errorMessage     String?
+  appliedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user    User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job     Job                  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  resume  ResumeVersion?       @relation(fields: [resumeVersionId], references: [id], onDelete: SetNull)
+  answers ApplicationAnswer[]
+  events  ApplicationEvent[]
+
+  @@unique([userId, jobId])
+  @@index([userId, status])
+  @@index([userId, appliedAt])
+}
+
+model ApplicationAnswer {
+  id             String  @id @default(cuid())
+  applicationId  String
+  fieldKey       String
+  question       String
+  answer         String
+  source         String
+  confidence     Float
+  requiresReview Boolean @default(true)
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+}
+
+model ApplicationEvent {
+  id            String   @id @default(cuid())
+  applicationId String
+  eventType     String
+  message       String
+  metadata      Json?
+  createdAt     DateTime @default(now())
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId, createdAt])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([entity, entityId])
+}
+
+model QueueJob {
+  id           String    @id @default(cuid())
+  queue        String
+  name         String
+  payload      Json
+  status       String    @default("pending")
+  attempts     Int       @default(0)
+  maxAttempts  Int       @default(5)
+  lastError    String?
+  correlationId String
+  idempotencyKey String?
+  runAfter     DateTime  @default(now())
+  lockedAt     DateTime?
+  finishedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([queue, status, runAfter])
+  @@index([correlationId])
+  @@index([idempotencyKey, status])
+  @@index([status, lockedAt])
+}

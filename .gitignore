@@ -1,0 +1,15 @@
+node_modules
+dist
+coverage
+.env
+data
+uploads
+uploads-test
+*.log
+.DS_Store
+client/dist
+client/node_modules
+prisma/*.db
+prisma/*.db-journal
+.vscode
+.idea
